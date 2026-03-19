@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Kalkulator nawozów</title>
+<style>
+body { font-family: Arial; max-width: 900px; margin: auto; background-color: #121212; color: #e0e0e0; }
+input { margin: 5px; background-color: #1e1e1e; color: #e0e0e0; border: 1px solid #444; padding: 5px; width: 60px; box-sizing: border-box; direction: ltr; }
+.result, .history-box { margin-top: 20px; font-weight: bold; background: #1e1e1e; padding: 10px; border-radius: 8px; }
+button { background-color: #2e7d32; color: white; border: none; padding: 8px 15px; margin: 5px; cursor: pointer; border-radius: 6px; }
+button:hover { background-color: #388e3c; }
+.tabs button { margin: 5px; }
+.tab { display: none; }
+.active { display: block; }
+.box { background:#1e1e1e; padding:10px; border-radius:8px; margin-top:10px; }
+.low { background-color: #000; color: #fff; padding:2px 4px; border-radius:4px; }
+.correct { background-color: #4caf50; color: #fff; padding:2px 4px; border-radius:4px; }
+.high { background-color: #f44336; color: #fff; padding:2px 4px; border-radius:4px; }
+.warning { color: #ffeb3b; }
+.box table { width: auto; border-collapse: collapse; }
+.box table td { padding: 5px; text-align: left; vertical-align: middle; }
+.box table input { text-align: left; width: 60px; box-sizing: border-box; direction: ltr; }
+.history-entry { border-radius: 6px; padding: 6px; margin-bottom: 8px; background-color: #1b1b1b; font-size: 13px; }
+.history-entry table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+.history-entry td, .history-entry th { padding: 2px 4px; font-size: 12px; border-bottom: 1px solid #333; text-align: center; }
+.history-entry th { background-color: #2e2e2e; }
+.history-entry .param-value.low { background-color: #000; }
+.history-entry .param-value.correct { background-color: #4caf50; color: #fff; }
+.history-entry .param-value.high { background-color: #f44336; color: #fff; }
+.history-entry .param-value.warning { background-color: #ffeb3b; color: #000; }
+.history-entry .dose, .history-entry .water {
+    display: block;
+    margin: 0 auto;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 12px;
+    text-align: center;
+}
+.history-entry .dose { background-color: #2196f3; color: #fff; }
+.history-entry .water { background-color: #ff9800; color: #000; }
+@media (max-width: 500px) {
+  body { max-width: 95%; }
+  input { width: 90%; }
+  button { width: 90%; }
+  .result, .history-box { display: block; width: 100%; margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<h2>Kalkulator nawozów</h2>
+<p style="font-size:12px;color:#aaa;">Wartości oparte na nawozach Aquaforest AF</p>
+
+<div class="tabs">
+  <button onclick="showTab('t1')">240L (200L)</button>
+  <button onclick="showTab('t2')">72L (60L)</button>
+  <button onclick="showTab('t3')">33,3L (28L)</button>
+  <button onclick="showTab('t4')">33,3L (28L)</button>
+  <button onclick="showTab('t5')">30L (25L)</button>
+  <button onclick="showTab('t6')">12L (10L)</button>
+</div>
+
+<div id="t1" class="tab active"></div>
+<div id="t2" class="tab"></div>
+<div id="t3" class="tab"></div>
+<div id="t4" class="tab"></div>
+<div id="t5" class="tab"></div>
+<div id="t6" class="tab"></div>
+
+<script>
+const tanks = { t1: 240, t2: 72, t3: 33.3, t4: 33.3, t5: 30, t6: 12 };
+const effectiveVolumes = { t1: 200, t2: 60, t3: 28, t4: 28, t5: 25, t6: 10 };
+const params = ['no3','po4','k','fe'];
+
+function dose(target, current, strength, volume){
+    let diff = target - current;
+    if(diff <= 0) return 0;
+    return (diff * volume) / (strength * 10);
+}
+
+function validateInput(id){
+    const el = document.getElementById(id);
+    let val = parseFloat(el.value);
+    if(isNaN(val) || val < 0) el.value = '';
+}
+
+function updateParamColors(id){
+    params.forEach(p=>{
+        const target = parseFloat(document.getElementById(`t${p}_${id}`)?.value) || 0;
+        const el = document.getElementById(`${p}_${id}`);
+        let val = parseFloat(el.value) || 0;
+        el.className = '';
+        if(val < target*0.95) el.classList.add('low');
+        else if(val > target*1.1) el.classList.add('high');
+        else el.classList.add('correct');
+        if((p==='fe' && val>1) || (p==='k' && val>50)) el.classList.add('warning');
+    });
+}
+
+function calc(id){
+    params.concat(['wc']).forEach(p=>{
+        const el = document.getElementById(`${p}_${id}`);
+        if(el) validateInput(`${p}_${id}`);
+    });
+
+    const v = effectiveVolumes[id];
+    let wc = parseFloat(document.getElementById(`wc_${id}`).value) || 0;
+    let current = {};
+    params.forEach(p=>{
+        let val = parseFloat(document.getElementById(`${p}_${id}`).value) || 0;
+        val *= (v - wc)/v;
+        current[p] = val;
+    });
+
+    let strength = {};
+    params.forEach(p=>{
+        strength[p] = parseFloat(document.getElementById(`s${p}_${id}`).value) || 0;
+    });
+
+    let target = {};
+    params.forEach(p=>{
+        target[p] = parseFloat(document.getElementById(`t${p}_${id}`).value) || 0;
+    });
+
+    let doses = {};
+    params.forEach(p=>{
+        doses[p] = dose(target[p], current[p], strength[p], v);
+    });
+    let micro = 8 * v / 100;
+
+    let outHTML = '<table>';
+    outHTML += `<tr><td>Dawkowanie dzienne:</td><td></td></tr>`;
+    outHTML += `<tr><td>🧪 NO3:</td><td>${(doses.no3/7).toFixed(2)} ml</td></tr>`;
+    outHTML += `<tr><td>💧 PO4:</td><td>${(doses.po4/7).toFixed(2)} ml</td></tr>`;
+    outHTML += `<tr><td>🌿 K:</td><td>${(doses.k/7).toFixed(2)} ml</td></tr>`;
+    outHTML += `<tr><td>🔩 Fe:</td><td>${(doses.fe/7).toFixed(2)} ml</td></tr>`;
+    outHTML += `<tr><td>💊 AF Micro:</td><td>${micro.toFixed(2)} kropli</td></tr>`;
+    outHTML += '</table>';
+    document.getElementById(`out_${id}`).innerHTML = outHTML;
+
+    let history = JSON.parse(localStorage.getItem(id+'_history') || '[]');
+    const now = new Date();
+    const datetime = now.toLocaleDateString('pl-PL') + ' ' + now.toLocaleTimeString('pl-PL', {hour:'2-digit',minute:'2-digit'});
+    history.push({
+        datetime,
+        wc,
+        ...current,
+        d_no3:(doses.no3/7).toFixed(2),
+        d_po4:(doses.po4/7).toFixed(2),
+        d_k:(doses.k/7).toFixed(2),
+        d_fe:(doses.fe/7).toFixed(2),
+        micro: micro.toFixed(2)
+    });
+    if(history.length>30) history.shift();
+    localStorage.setItem(id+'_history', JSON.stringify(history));
+
+    updateParamColors(id);
+    renderHistory(id);
+}
+
+function renderHistory(id){
+    const history = JSON.parse(localStorage.getItem(id+'_history') || '[]');
+    let html = '<b>Historia 30 dni:</b><br>';
+    history.slice().reverse().forEach(h=>{
+        html += `<div class="history-entry"><b>${h.datetime}</b>`;
+        html += `<table><tr><th>Parametr</th><th>Wartość</th><th>Dawki dzienne</th><th>Woda</th></tr>`;
+
+        params.forEach(p=>{
+            let val = h[p];
+            let target = parseFloat(document.getElementById(`t${p}_${id}`).value) || 0;
+            let icon = '✅';
+            let cls = 'correct';
+            if(val < target*0.95) { icon = '⚠️'; cls='low'; }
+            else if(val > target*1.1) { icon = '❌'; cls='high'; }
+            if((p==='fe' && val>1) || (p==='k' && val>50)) { icon='⚠️'; cls='warning'; }
+            let doseVal = h['d_'+p];
+            let waterHTML = '';
+            if(p==='no3' && h.wc>0){
+                waterHTML = `<span class="water">${h.wc} l</span>`;
+            }
+
+            html += `<tr>
+                <td>${icon} ${p.toUpperCase()}</td>
+                <td class="param-value ${cls}">${val}</td>
+                <td><span class="dose">${doseVal} ml</span></td>
+                <td>${waterHTML}</td>
+            </tr>`;
+        });
+
+        html += `<tr><td>💊 Micro</td><td>–</td><td><span class="dose">${h.micro} kropli</span></td><td></td></tr>`;
+        html += `</table></div>`;
+    });
+    const div = document.getElementById(`history_${id}`);
+    div.innerHTML = html;
+    div.scrollTop = div.scrollHeight;
+}
+
+function clearResults(id){
+    params.forEach(p=>document.getElementById(`${p}_${id}`).value='');
+    document.getElementById(`wc_${id}`).value='';
+    updateParamColors(id);
+    document.getElementById(`out_${id}`).innerHTML='';
+}
+function clearHistory(id){
+    localStorage.removeItem(id+'_history');
+    document.getElementById(`history_${id}`).innerHTML='<b>Historia 30 dni:</b><br>';
+}
+
+function showTab(id){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+function createTankUI(id, volume){
+    document.getElementById(id).innerHTML=`
+    <h3>${volume}L</h3>
+    <div class="box">
+    <table>
+      <tr>
+        <td>Podmiana:</td>
+        <td><input id="wc_${id}" type="number" title="Ilość wody podmienionej w litrach"> l</td>
+      </tr>
+    </table>
+    </div>
+    <div class="box">
+    <b>Parametry (mg/l)</b><br>
+    <p style="font-size:12px;color:#aaa;">Wprowadź parametry przed podmianą wody</p>
+    <table>
+      <tr><td>🧪 NO3:</td><td><input id="no3_${id}" type="number" step="0.1" oninput="updateParamColors('${id}')"> mg/l</td></tr>
+      <tr><td>💧 PO4:</td><td><input id="po4_${id}" type="number" step="0.1" oninput="updateParamColors('${id}')"> mg/l</td></tr>
+      <tr><td>🌿 K:</td><td><input id="k_${id}" type="number" step="0.1" oninput="updateParamColors('${id}')"> mg/l</td></tr>
+      <tr><td>🔩 Fe:</td><td><input id="fe_${id}" type="number" step="0.01" oninput="updateParamColors('${id}')"> mg/l</td></tr>
+    </table>
+    <button onclick="clearResults('${id}')">Wyczyść parametry</button>
+    </div>
+    <div class="box">
+    <b>Moc nawozów (mg/l)</b> <p style="font-size:12px;color:#aaa;">Wartości dla 10ml nawozu na 100L wody</p>
+    <table style="text-align:left;">
+      <tr><td>🧪 AF N Boost:</td><td><input id="sno3_${id}" value="9.5"> mg/l</td></tr>
+      <tr><td>💧 AF PO4 Boost:</td><td><input id="spo4_${id}" value="0.4"> mg/l</td></tr>
+      <tr><td>🌿 AF K Boost:</td><td><input id="sk_${id}" value="5"> mg/l</td></tr>
+      <tr><td>🔩 AF Iron Boost:</td><td><input id="sfe_${id}" value="0.4"> mg/l</td></tr>
+      <tr><td>💊 AF Micro:</td><td>8 kropli/dzień</td></tr>
+    </table>
+    </div>
+    <div class="box">
+    <b>Docelowe (mg/l)</b>
+    <table style="text-align:left;">
+      <tr><td>🧪 NO3:</td><td><input id="tno3_${id}" value="10"> mg/l</td></tr>
+      <tr><td>💧 PO4:</td><td><input id="tpo4_${id}" value="1"> mg/l</td></tr>
+      <tr><td>🌿 K:</td><td><input id="tk_${id}" value="20"> mg/l</td></tr>
+      <tr><td>🔩 Fe:</td><td><input id="tfe_${id}" value="0.4"> mg/l</td></tr>
+    </table>
+    </div>
+    <button onclick="calc('${id}')">Oblicz</button>
+    <button onclick="clearHistory('${id}')">Wyczyść historię</button>
+    <div class="result" id="out_${id}"></div>
+    <div class="history-box" id="history_${id}"><b>Historia 30 dni:</b><br></div>
+    `;
+}
+
+// Inicjalizacja UI i automatyczne wczytanie historii
+Object.keys(tanks).forEach(id=>{
+    createTankUI(id, tanks[id]);
+    renderHistory(id);
+});
+</script>
+
+</body>
+</html>
