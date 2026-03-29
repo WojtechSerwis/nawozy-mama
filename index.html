@@ -227,15 +227,45 @@ function syncT4ModeFromStoredTargets(){
 
 
 function savePlanState(id, data){
-    localStorage.setItem(id + '_plan_state_v16', JSON.stringify(data));
+    localStorage.setItem(id + '_plan_state_v17', JSON.stringify(data));
 }
 
 function loadPlanState(id){
     try {
-        return JSON.parse(localStorage.getItem(id + '_plan_state_v16') || 'null');
+        return JSON.parse(localStorage.getItem(id + '_plan_state_v17') || 'null');
     } catch(e){
         return null;
     }
+}
+
+
+const waterChangeDayOptions = [
+    { value: 'mon', label: 'Poniedziałek' },
+    { value: 'tue', label: 'Wtorek' },
+    { value: 'wed', label: 'Środa' },
+    { value: 'thu', label: 'Czwartek' },
+    { value: 'fri', label: 'Piątek' },
+    { value: 'sat', label: 'Sobota' },
+    { value: 'sun', label: 'Niedziela' }
+];
+
+function getWaterChangeDayLabel(value){
+    const found = waterChangeDayOptions.find(d => d.value === value);
+    return found ? found.label : 'Sobota';
+}
+
+function getDoseScheduleLabels(id){
+    const selected = document.getElementById(`wcd_${id}`)?.value || 'sat';
+    const order = ['mon','tue','wed','thu','fri','sat','sun'];
+    const labels = Object.fromEntries(waterChangeDayOptions.map(d => [d.value, d.label]));
+    const idx = order.indexOf(selected);
+    const pick = offset => labels[order[(idx + offset) % 7]];
+    return {
+        waterChangeDay: labels[selected],
+        dose1: `${pick(0)} po podmianie`,
+        dose2: pick(3),
+        dose3: pick(5)
+    };
 }
 
 function saveAllSettings(id){
@@ -243,6 +273,7 @@ function saveAllSettings(id){
     const settings = {
         mode: modeEl ? modeEl.value : 'high',
         wc: document.getElementById(`wc_${id}`)?.value || '',
+        waterChangeDay: document.getElementById(`wcd_${id}`)?.value || 'sat',
         strengths: {},
         targets: {},
         measured: {}
@@ -252,17 +283,18 @@ function saveAllSettings(id){
         settings.targets[p] = document.getElementById(`t${p}_${id}`)?.value || '';
         settings.measured[p] = document.getElementById(`${p}_${id}`)?.value || '';
     });
-    localStorage.setItem(id + '_settings_v16', JSON.stringify(settings));
+    localStorage.setItem(id + '_settings_v17', JSON.stringify(settings));
 }
 
 function loadAllSettings(id){
     try {
-        const settings = JSON.parse(localStorage.getItem(id + '_settings_v16') || 'null');
+        const settings = JSON.parse(localStorage.getItem(id + '_settings_v17') || 'null');
         if(!settings) return false;
 
         const modeEl = document.getElementById(`tech_${id}`);
         if(modeEl && settings.mode) modeEl.value = settings.mode;
         if(settings.wc !== undefined && document.getElementById(`wc_${id}`)) document.getElementById(`wc_${id}`).value = settings.wc;
+        if(settings.waterChangeDay !== undefined && document.getElementById(`wcd_${id}`)) document.getElementById(`wcd_${id}`).value = settings.waterChangeDay;
 
         params.forEach(p=>{
             const sEl = document.getElementById(`s${p}_${id}`);
@@ -305,6 +337,8 @@ function captureOriginalDefaults(id){
     if(wcEl && !wcEl.dataset.original) wcEl.dataset.original = '';
     const modeEl = document.getElementById(`tech_${id}`);
     if(modeEl && !modeEl.dataset.original) modeEl.dataset.original = modeEl.value || 'high';
+    const wcdEl = document.getElementById(`wcd_${id}`);
+    if(wcdEl && !wcdEl.dataset.original) wcdEl.dataset.original = wcdEl.value || 'sat';
 }
 
 function resetToOptimalSettings(id){
@@ -334,6 +368,10 @@ function resetToOptimalSettings(id){
     const wcEl = document.getElementById(`wc_${id}`);
     if(wcEl){
         wcEl.value = wcEl.dataset.original ?? '';
+    }
+    const wcdEl = document.getElementById(`wcd_${id}`);
+    if(wcdEl){
+        wcdEl.value = wcdEl.dataset.original ?? 'sat';
     }
 
     document.getElementById(`out_${id}`).innerHTML = '';
@@ -371,7 +409,7 @@ function getTrendSymbol(curr, prev){
 }
 
 function renderTrendInfo(id){
-    const history = JSON.parse(localStorage.getItem(id+'_history_v16') || '[]');
+    const history = JSON.parse(localStorage.getItem(id+'_history_v17') || '[]');
     const el = document.getElementById(`trend_${id}`);
     if(!el) return;
     if(history.length < 2){
@@ -598,6 +636,10 @@ function optimizeFertilizerCombo(id, v, afterWC, target, strength){
             weekly.k = dose(target.k, afterCombined.k + nitroKContribution, strength.k, v);
             weekly.fe = dose(target.fe, afterCombined.fe, strength.fe, v);
 
+            if(id === 't3'){
+                weekly.k = Math.min(weekly.k, 3);
+            }
+
             const finalState = {
                 no3: afterCombined.no3 + contributionFromDose(weekly.no3, strength.no3, v),
                 po4: afterCombined.po4 + contributionFromDose(weekly.po4, strength.po4, v),
@@ -678,10 +720,10 @@ function buildAlerts(afterWC, target, wc, feroxPlan = null){
 }
 
 function saveHistoryEntry(id, entry){
-    let history = JSON.parse(localStorage.getItem(id + '_history_v16') || '[]');
+    let history = JSON.parse(localStorage.getItem(id + '_history_v17') || '[]');
     history.push(entry);
     if(history.length > 30) history.shift();
-    localStorage.setItem(id + '_history_v16', JSON.stringify(history));
+    localStorage.setItem(id + '_history_v17', JSON.stringify(history));
 }
 
 function saveMeasurementOnly(id){
@@ -876,12 +918,13 @@ function calc(id){
     saveAllSettings(id);
     const alerts = buildAlerts(afterWC, target, wc, feroxPlan);
 
+    const scheduleLabels = getDoseScheduleLabels(id);
     let outHTML = '<div class="readable-plan"><table>';
     outHTML += `<tr><td class="label-col">Tryb nawożenia</td><td><span class="plan-pill">${profile.label}</span></td></tr>`;
     outHTML += `<tr><td class="label-col">Tryb Macro/Ferox</td><td><span class="plan-pill">${getImplicitDosingModeLabel(id)}</span></td></tr>`;
     outHTML += `<tr><td class="label-col">Strategia doboru</td><td><span class="plan-pill">Najlepsza kombinacja nawozów</span> <span class="plan-pill">Macro baza ${bestCombo.macroBase.toFixed(1)} ml/tydz</span> <span class="plan-pill">Ferox baza ${bestCombo.feroxBase.toFixed(1)} ml/tydz</span></td></tr>`;
     outHTML += `<tr><td colspan="2" class="plan-section-title">Plan 3x w tygodniu wg testów i podmiany</td></tr>`;
-    outHTML += `<tr><td colspan="2" class="plan-note">Testy robisz przed podmianą, dawka sobotnia jest liczona po podmianie RO.</td></tr>`;
+    outHTML += `<tr><td colspan="2" class="plan-note">Testy robisz przed podmianą. Wybrany dzień podmiany: ${scheduleLabels.waterChangeDay}. Pierwsza dawka jest liczona po podmianie.</td></tr>`;
 
     outHTML += `<tr><td colspan="2" class="plan-section-title">1. Stan przed podmianą</td></tr>`;
     outHTML += `<tr><td class="label-col">Testy</td><td>
@@ -908,7 +951,7 @@ function calc(id){
     </td></tr>`;
 
     outHTML += `<tr><td colspan="2" class="plan-section-title">4. Plan dawkowania</td></tr>`;
-    outHTML += `<tr><td class="label-col"><span class="plan-day">Sobota po podmianie</span></td><td>
+    outHTML += `<tr><td class="label-col"><span class="plan-day">${scheduleLabels.dose1}</span></td><td>
         <span class="plan-dose">N ${d1.no3.toFixed(2)} ml</span>
         <span class="plan-dose">PO4 ${d1.po4.toFixed(2)} ml</span>
         <span class="plan-dose">K ${d1.k.toFixed(2)} ml</span>
@@ -916,7 +959,7 @@ function calc(id){
         <span class="plan-dose">Macro ${macro1.toFixed(1)} ml</span>
         <span class="plan-dose">Ferox ${micro1.toFixed(1)} ml</span>
     </td></tr>`;
-    outHTML += `<tr><td class="label-col"><span class="plan-day">Wtorek</span></td><td>
+    outHTML += `<tr><td class="label-col"><span class="plan-day">${scheduleLabels.dose2}</span></td><td>
         <span class="plan-dose">N ${d2.no3.toFixed(2)} ml</span>
         <span class="plan-dose">PO4 ${d2.po4.toFixed(2)} ml</span>
         <span class="plan-dose">K ${d2.k.toFixed(2)} ml</span>
@@ -924,7 +967,7 @@ function calc(id){
         <span class="plan-dose">Macro ${macro2.toFixed(1)} ml</span>
         <span class="plan-dose">Ferox ${micro2.toFixed(1)} ml</span>
     </td></tr>`;
-    outHTML += `<tr><td class="label-col"><span class="plan-day">Czwartek</span></td><td>
+    outHTML += `<tr><td class="label-col"><span class="plan-day">${scheduleLabels.dose3}</span></td><td>
         <span class="plan-dose">N ${d3.no3.toFixed(2)} ml</span>
         <span class="plan-dose">PO4 ${d3.po4.toFixed(2)} ml</span>
         <span class="plan-dose">K ${d3.k.toFixed(2)} ml</span>
@@ -940,7 +983,8 @@ function calc(id){
         <span class="plan-pill">Fe ${weekly.fe.toFixed(2)} ml</span>
         <span class="plan-pill">Macro ${macroWeekly.toFixed(1)} ml</span>
         <span class="plan-pill">Ferox ${microWeekly.toFixed(1)} ml</span><br>
-        Podział dawek: 50% sobota po podmianie, 25% wtorek, 25% czwartek.<br>
+        Podział dawek: 50% ${scheduleLabels.dose1.toLowerCase()}, 25% ${scheduleLabels.dose2.toLowerCase()}, 25% ${scheduleLabels.dose3.toLowerCase()}.<br>
+        ${id === 't3' ? '<span class="plan-note">Dla 33l (28l netto) Kali+ jest praktycznie ograniczone do około 3 ml/tydzień, żeby nie przeszacować K w low-tech.</span><br>' : ''}
         <span class="plan-note">Invital Macro jest liczony indywidualnie z braków NO3, PO4 i K po podmianie, a Invital Ferox indywidualnie z braków Fe i K po uwzględnieniu Macro. W tym planie Macro wnosi tygodniowo około: NO3 ${macroContribution.no3.toFixed(2)} mg/l, PO4 ${macroContribution.po4.toFixed(3)} mg/l, K ${macroContribution.k.toFixed(2)} mg/l. Ferox wnosi tygodniowo około: K ${microContribution.k.toFixed(2)} mg/l, Fe ${microContribution.fe.toFixed(3)} mg/l. Kalkulator uwzględnia też potas dostarczany przez Invital Nitro+. Po uwzględnieniu Macro zostaje do uzupełnienia: NO3 ${macroPlan.remainingNo3Deficit.toFixed(2)} mg/l, PO4 ${macroPlan.remainingPo4Deficit.toFixed(3)} mg/l, K ${macroPlan.remainingKDeficit.toFixed(2)} mg/l. Po uwzględnieniu Ferox zostaje do uzupełnienia: K ${feroxPlan.remainingKDeficit.toFixed(2)} mg/l, Fe ${feroxPlan.remainingFeDeficit.toFixed(3)} mg/l.</span>
     </td></tr>`;
 
@@ -966,7 +1010,7 @@ function calc(id){
 }
 
 function renderHistory(id){
-    const history = JSON.parse(localStorage.getItem(id+'_history_v16') || '[]');
+    const history = JSON.parse(localStorage.getItem(id+'_history_v17') || '[]');
     let html = '<b>Historia 30 wpisów:</b><br>';
     history.slice().reverse().forEach(h=>{
         const raw = h.raw || {
@@ -1039,6 +1083,18 @@ function createTankUI(id, volume){
             <span style="display:inline-block;margin-left:10px;color:#aaa;">Sugerowana: ${customPresets[id].waterChange} l</span>
             <button onclick="applySuggestedWaterChange('${id}')" style="padding:4px 8px;margin-left:8px;">Ustaw</button>
           ` : ``}
+          <div style="margin-top:8px;">
+            <span style="display:inline-block;min-width:120px;color:#aaa;">Dzień podmiany:</span>
+            <select id="wcd_${id}" onchange="saveAllSettings('${id}')" style="margin: 5px; background-color: #1e1e1e; color: #e0e0e0; border: 1px solid #444; padding: 5px; border-radius: 4px;">
+              <option value="mon">Poniedziałek</option>
+              <option value="tue">Wtorek</option>
+              <option value="wed">Środa</option>
+              <option value="thu">Czwartek</option>
+              <option value="fri">Piątek</option>
+              <option value="sat" selected>Sobota</option>
+              <option value="sun">Niedziela</option>
+            </select>
+          </div>
         </td>
       </tr>
     </table>
@@ -1093,7 +1149,7 @@ function createTankUI(id, volume){
     </div>    ${Object.keys(customPresets).includes(id) ? `<div class="box" id="plan_${id}">
     <b>Plan nawożenia dla tego akwarium</b><br>
     <span style="color:#aaa;">${
-        id === 't1' ? 'Dojrzałe high tech z CO2, aktywnym podłożem i sporą obsadą ryb. Preferencja Nitro nad Macro dla kontroli K.' :
+        id === 't1' ? 'High tech z CO2, aktywnym podłożem i sporą obsadą ryb.' :
         id === 't2' ? '72l brutto / 60l netto. Low tech bez CO2 z dużą obsadą i spokojnym nawożeniem.' :
         id === 't3' ? '33l brutto / 28l netto. Low tech na epifitach, bez CO2, z bardzo lekkim nawożeniem.' :
         id === 't4' ? '<span id="t4_desc_text">Dojrzały zbiornik paprotkowy bez CO2, ze spokojnym nawożeniem dla neocaridina.</span>' : id === 't5' ? '30l brutto / 25l netto. Dojrzałe krewetkarium bez CO2, z lekkim i stabilnym nawożeniem.' : 'Sanatorium 20l z ostrożnym i stabilnym nawożeniem.'
