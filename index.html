@@ -2,17 +2,23 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kalkulator nawozów</title>
 <style>
 body { font-family: Arial; max-width: 900px; margin: auto; background-color: #121212; color: #e0e0e0; }
 input { margin: 5px; background-color: #1e1e1e; color: #e0e0e0; border: 1px solid #444; padding: 5px; width: 60px; box-sizing: border-box; direction: ltr; }
-.result, .history-box { margin-top: 20px; font-weight: bold; background: #1e1e1e; padding: 10px; border-radius: 8px; }
-button { background-color: #2e7d32; color: white; border: none; padding: 8px 15px; margin: 5px; cursor: pointer; border-radius: 6px; }
-button:hover { background-color: #388e3c; }
+.result, .history-box { margin-top: 28px; font-weight: bold; background: #181818; padding: 14px; border-radius: 10px; border: 1px solid #2b2b2b; }
+.history-box { max-height: 500px; overflow-y: auto; }
+button { background-color: #3a3a3a; color: white; border: none; padding: 8px 15px; margin: 5px; cursor: pointer; border-radius: 6px; }
+button:hover { background-color: #4a4a4a; }
+button.primary-btn { background-color: #2e7d32; }
+button.primary-btn:hover { background-color: #388e3c; }
 .tabs button { margin: 5px; }
 .tab { display: none; }
 .active { display: block; }
-.box { background:#1e1e1e; padding:10px; border-radius:8px; margin-top:10px; }
+.box { background:#1e1e1e; padding:14px; border-radius:10px; margin-top:16px; }
+.box b { display:block; font-size:15px; color:#fff; margin-bottom:8px; }
+.box p { margin-top:4px; margin-bottom:10px; }
 .low { background-color: #000; color: #fff; padding:2px 4px; border-radius:4px; }
 .correct { background-color: #4caf50; color: #fff; padding:2px 4px; border-radius:4px; }
 .high { background-color: #f44336; color: #fff; padding:2px 4px; border-radius:4px; }
@@ -20,7 +26,7 @@ button:hover { background-color: #388e3c; }
 .box table { width: auto; border-collapse: collapse; }
 .box table td { padding: 5px; text-align: left; vertical-align: middle; }
 .box table input { text-align: left; width: 60px; box-sizing: border-box; direction: ltr; }
-.history-entry { border-radius: 6px; padding: 6px; margin-bottom: 8px; background-color: #1b1b1b; font-size: 13px; }
+.history-entry { border-radius: 6px; padding: 8px; margin-bottom: 10px; background-color: #151515; border:1px solid #2a2a2a; font-size: 13px; }
 .history-entry table { width: 100%; border-collapse: collapse; margin-top: 4px; }
 .history-entry td, .history-entry th { padding: 2px 4px; font-size: 12px; border-bottom: 1px solid #333; text-align: center; }
 .history-entry th { background-color: #2e2e2e; }
@@ -38,6 +44,20 @@ button:hover { background-color: #388e3c; }
 }
 .history-entry .dose { background-color: #2196f3; color: #fff; }
 .history-entry .water { background-color: #ff9800; color: #000; }
+.status-bar { margin-top:12px; font-size:12px; color:#aaa; line-height:1.5; }
+.alert-box { margin-top:8px; font-size:12px; color:#ffeb3b; }
+.small-btn { padding:4px 8px; margin-left:8px; }
+.trend-box { margin-top:10px; font-size:12px; color:#aaa; line-height:1.5; }
+.plan-section-title { font-size:13px; color:#fff; font-weight:bold; padding-top:8px; }
+.plan-note { font-size:12px; color:#aaa; }
+.plan-pill { display:inline-block; padding:2px 6px; border-radius:4px; margin:2px 4px 2px 0; font-size:12px; background:#2a2a2a; }
+.plan-day { background:#263238; color:#fff; padding:4px 6px; border-radius:6px; font-weight:bold; }
+.plan-dose { display:inline-block; min-width:72px; padding:2px 6px; border-radius:4px; margin:2px 4px 2px 0; font-size:12px; text-align:center; background:#1f1f1f; }
+.plan-total { font-size:12px; color:#aaa; padding-top:6px; }
+.readable-plan table { border-collapse:separate; border-spacing:0 6px; width:100%; }
+.readable-plan td { vertical-align:top; }
+.readable-plan .label-col { width:170px; color:#ddd; }
+select { background-color: #1e1e1e; color: #e0e0e0; border: 1px solid #444; padding: 5px; }
 @media (max-width: 500px) {
   body { max-width: 95%; }
   input { width: 90%; }
@@ -49,15 +69,15 @@ button:hover { background-color: #388e3c; }
 <body>
 
 <h2>Kalkulator nawozów</h2>
-<p style="font-size:12px;color:#aaa;">Wartości oparte na nawozach Aquaforest AF</p>
+<p style="font-size:12px;color:#aaa;">Dynamiczny kalkulator nawożenia pod nawozy Invital</p>
 
 <div class="tabs">
-  <button onclick="showTab('t1')">240L (200L)</button>
-  <button onclick="showTab('t2')">72L (60L)</button>
-  <button onclick="showTab('t3')">33,3L (28L)</button>
-  <button onclick="showTab('t4')">33,3L (28L)</button>
-  <button onclick="showTab('t5')">30L (25L)</button>
-  <button onclick="showTab('t6')">12L (10L)</button>
+<button onclick="showTab('t1')">240l (200l netto)</button>
+<button onclick="showTab('t2')">72l (60l netto)</button>
+<button onclick="showTab('t3')">33l (28l netto)</button>
+<button onclick="showTab('t4')">33l paprotki (28l netto)</button>
+<button onclick="showTab('t5')">30l (25l netto)</button>
+<button onclick="showTab('t6')">20l (sanatorium)</button>
 </div>
 
 <div id="t1" class="tab active"></div>
@@ -68,14 +88,684 @@ button:hover { background-color: #388e3c; }
 <div id="t6" class="tab"></div>
 
 <script>
-const tanks = { t1: 240, t2: 72, t3: 33.3, t4: 33.3, t5: 30, t6: 12 };
-const effectiveVolumes = { t1: 200, t2: 60, t3: 28, t4: 28, t5: 25, t6: 10 };
+const tanks = { t1: 240, t2: 72, t3: 33, t4: 33, t5: 30, t6: 20 };
+const effectiveVolumes = { t1: 200, t2: 60, t3: 28, t4: 28, t5: 25, t6: 18 };
 const params = ['no3','po4','k','fe'];
+const tankLabels = {
+    t1: '240l (200l netto)',
+    t2: '72l (60l netto)',
+    t3: '33l (28l netto)',
+    t4: '33l paprotki (28l netto)',
+    t5: '30l (25l netto)',
+    t6: '20l (sanatorium)'
+};
+const techProfiles = {
+    high: { label: 'High Tech', target: { no3: 10, po4: 1, k: 20, fe: 0.4 }, microFactor: 15 },
+    low: { label: 'Low Tech', target: { no3: 5, po4: 0.5, k: 10, fe: 0.1 }, microFactor: 6 }
+};
+
+const customPresets = {
+    t1: {
+        mode: 'high',
+        co2: true,
+        light: 'strong',
+        target: { no3: 12, po4: 0.7, k: 16, fe: 0.12 },
+        waterChange: 60,
+        dosing3x: { label: 'Plan stabilizacyjny 3x w tygodniu (niski K)', strategy: 'dynamic' },
+        note: '240l brutto / 200l netto. Dojrzałe HT z dużą obsadą. Priorytet: utrzymanie NO3 około 12 mg/l, trzymanie K bliżej 16 mg/l i stabilny wzrost. Światło: 55% mocy, 8h świecenia (1h wschód / 6h pełne / 1h zachód).'
+    },
+    t2: {
+        mode: 'low',
+        co2: false,
+        light: 'weak',
+        target: { no3: 10, po4: 0.5, k: 10, fe: 0.05 },
+        waterChange: 20,
+        dosing3x: { label: 'Plan stabilizacyjny 3x w tygodniu (bez CO2)', strategy: 'dynamic' },
+        note: '72l brutto / 60l netto. Low tech bez CO2 z dużą obsadą. Priorytet: zbicie NO3 podmianą, uzupełnianie PO4, K i Fe oraz spokojne światło. Światło: 45% mocy, 7h świecenia (1h wschód / 5h pełne / 1h zachód).'
+    },
+    t3: {
+        mode: 'low',
+        co2: false,
+        light: 'weak',
+        target: { no3: 7, po4: 0.4, k: 7, fe: 0.03 },
+        waterChange: 8,
+        dosing3x: { label: 'Plan stabilizacyjny dla 33l shrimp tank', strategy: 'dynamic' },
+        note: '33l brutto / 28l netto. Młody zbiornik bez CO2 i bez aktywnego podłoża, docelowo neocaridina. Priorytet: stabilność, lekkie wsparcie K i mikro. Światło: 6h świecenia, lampa Invital TF-300 4W bez regulacji mocy.'
+    },
+    t4: {
+        mode: 'low',
+        co2: false,
+        light: 'weak',
+        target: { no3: 7, po4: 0.4, k: 7, fe: 0.03 },
+        waterChange: 6,
+        dosing3x: { label: 'Plan dla dojrzałego akwarium 33l paprotki', strategy: 'dynamic' },
+        note: '33l paprotki brutto / 28l netto. Dojrzały zbiornik bez CO2 dla neocaridina. Światło: 6–6.5h dziennie. Ostrzeżenie: neocaridina tylko przy NO2 = 0.'
+    },
+    t5: {
+        mode: 'low',
+        co2: false,
+        light: 'weak',
+        target: { no3: 8, po4: 0.4, k: 11, fe: 0.04 },
+        waterChange: 9,
+        dosing3x: { label: 'Plan nawożenia dla 30l krewetkarium', strategy: 'dynamic' },
+        note: '30l brutto / 25l netto. Dojrzałe krewetkarium bez CO2, z aktywnym podłożem i kulkami nawozowymi. Obsada: krewetki orange, blue, red. Rośliny: anubiasy, microsorium, cabomba, lotos zielony, rotala, limnophilia. Światło: Sincor LED RGB 30 cm, zalecane 50–60% mocy przez 7h dziennie.'
+    },
+    t6: {
+        mode: 'low',
+        co2: false,
+        light: 'weak',
+        target: { no3: 4, po4: 0.20, k: 5, fe: 0.03 },
+        waterChange: 6,
+        dosing3x: { label: 'Plan 3x w tygodniu', strategy: 'dynamic' },
+        note: 'Dynamiczny plan dla 20l (sanatorium).'
+    }
+};
+
+const t4Modes = {
+    fresh: {
+        target: { no3: 7, po4: 0.4, k: 7, fe: 0.03 },
+        waterChange: 6,
+        note: '33l paprotki brutto / 28l netto. Dojrzały zbiornik bez CO2 dla neocaridina. Światło: 6–6.5h dziennie. Ostrzeżenie: neocaridina tylko przy NO2 = 0.'
+    },
+    mature: {
+        target: { no3: 7, po4: 0.4, k: 7, fe: 0.03 },
+        waterChange: 6,
+        note: '33l paprotki brutto / 28l netto. Dojrzały zbiornik bez CO2 dla neocaridina. Światło: 6–6.5h dziennie. Ostrzeżenie: neocaridina tylko przy NO2 = 0.'
+    }
+};
+
+function applyT4Mode(updateInputs = true){
+    const select = document.getElementById('t4_mode');
+    const mode = 'mature';
+    const chosen = t4Modes[mode] || t4Modes.fresh;
+    const preset = customPresets.t4;
+    preset.target = {...chosen.target};
+    preset.waterChange = chosen.waterChange;
+    preset.note = chosen.note;
+    preset.dosing3x = { label: mode === 'fresh' ? 'Plan dojrzewania dla 33l paprotki' : 'Plan dojrzałego akwarium 33l paprotki', strategy: 'dynamic' };
+
+    const targetText = document.getElementById('t4_target_text');
+    if(targetText) targetText.textContent = `Docelowe: NO3 ${chosen.target.no3}, PO4 ${chosen.target.po4}, K ${chosen.target.k}, Fe ${chosen.target.fe.toFixed(2)}`;
+    const lightText = document.getElementById('t4_light_text');
+    if(lightText) lightText.textContent = mode === 'fresh'
+        ? 'Oświetlenie planu: Invital TF-300 4W. Zalecany czas: 6h dziennie.'
+        : 'Oświetlenie planu: Invital TF-300 4W. Zalecany czas: 6–6.5h dziennie.';
+    const descText = document.getElementById('t4_desc_text');
+    if(descText) descText.textContent = mode === 'fresh'
+        ? 'Świeży zbiornik paprotkowy bez CO2, z bardzo delikatnym nawożeniem.'
+        : 'Dojrzały zbiornik paprotkowy bez CO2, ze spokojnym nawożeniem dla neocaridina.';
+    const warnText = document.getElementById('t4_warn_text');
+    if(warnText) warnText.textContent = mode === 'fresh'
+        ? 'Ostrzeżenie: przy NO2 > 0 nie wpuszczaj krewetek.'
+        : 'Ostrzeżenie: przełącz na tryb dojrzały dopiero po stabilnym NO2 = 0.';
+    if(updateInputs){
+        const wcEl = document.getElementById('wc_t4');
+        if(wcEl) wcEl.value = chosen.waterChange;
+        ['no3','po4','k','fe'].forEach(p=>{
+            const el = document.getElementById(`t${p}_t4`);
+            if(el){
+                el.value = chosen.target[p];
+                el.dataset.manual = '1';
+            }
+        });
+        applyTechProfile('t4', true);
+        updateParamColors('t4');
+        saveAllSettings('t4');
+    }
+}
+
+function syncT4ModeFromStoredTargets(){
+    const feEl = document.getElementById('tfe_t4');
+    if(!feEl) return;
+    const fe = parseFloat(feEl.value || '0');
+    const select = document.getElementById('t4_mode');
+    if(select){
+        select.value = 'mature';
+    }
+    applyT4Mode(false);
+}
+
+
+function savePlanState(id, data){
+    localStorage.setItem(id + '_plan_state_v16', JSON.stringify(data));
+}
+
+function loadPlanState(id){
+    try {
+        return JSON.parse(localStorage.getItem(id + '_plan_state_v16') || 'null');
+    } catch(e){
+        return null;
+    }
+}
+
+function saveAllSettings(id){
+    const modeEl = document.getElementById(`tech_${id}`);
+    const settings = {
+        mode: modeEl ? modeEl.value : 'high',
+        wc: document.getElementById(`wc_${id}`)?.value || '',
+        strengths: {},
+        targets: {},
+        measured: {}
+    };
+    params.forEach(p=>{
+        settings.strengths[p] = document.getElementById(`s${p}_${id}`)?.value || '';
+        settings.targets[p] = document.getElementById(`t${p}_${id}`)?.value || '';
+        settings.measured[p] = document.getElementById(`${p}_${id}`)?.value || '';
+    });
+    localStorage.setItem(id + '_settings_v16', JSON.stringify(settings));
+}
+
+function loadAllSettings(id){
+    try {
+        const settings = JSON.parse(localStorage.getItem(id + '_settings_v16') || 'null');
+        if(!settings) return false;
+
+        const modeEl = document.getElementById(`tech_${id}`);
+        if(modeEl && settings.mode) modeEl.value = settings.mode;
+        if(settings.wc !== undefined && document.getElementById(`wc_${id}`)) document.getElementById(`wc_${id}`).value = settings.wc;
+
+        params.forEach(p=>{
+            const sEl = document.getElementById(`s${p}_${id}`);
+            const tEl = document.getElementById(`t${p}_${id}`);
+            const mEl = document.getElementById(`${p}_${id}`);
+            if(sEl && settings.strengths && settings.strengths[p] !== undefined) sEl.value = settings.strengths[p];
+            if(tEl && settings.targets && settings.targets[p] !== undefined){
+                tEl.value = settings.targets[p];
+                tEl.dataset.manual = '1';
+            }
+            if(mEl && settings.measured && settings.measured[p] !== undefined) mEl.value = settings.measured[p];
+        });
+        return true;
+    } catch(e){
+        return false;
+    }
+}
+
+function restorePlanView(id){
+    const state = loadPlanState(id);
+    if(state && state.html && document.getElementById(`out_${id}`)){
+        document.getElementById(`out_${id}`).innerHTML = state.html;
+    }
+    const status = document.getElementById(`plan_status_${id}`);
+    if(status && state && state.status){
+        status.textContent = state.status;
+    }
+}
+
+function captureOriginalDefaults(id){
+    params.forEach(p=>{
+        const tEl = document.getElementById(`t${p}_${id}`);
+        const sEl = document.getElementById(`s${p}_${id}`);
+        const mEl = document.getElementById(`${p}_${id}`);
+        if(tEl && !tEl.dataset.original) tEl.dataset.original = tEl.value;
+        if(sEl && !sEl.dataset.original) sEl.dataset.original = sEl.value;
+        if(mEl && !mEl.dataset.original) mEl.dataset.original = '';
+    });
+    const wcEl = document.getElementById(`wc_${id}`);
+    if(wcEl && !wcEl.dataset.original) wcEl.dataset.original = '';
+    const modeEl = document.getElementById(`tech_${id}`);
+    if(modeEl && !modeEl.dataset.original) modeEl.dataset.original = modeEl.value || 'high';
+}
+
+function resetToOptimalSettings(id){
+    const modeEl = document.getElementById(`tech_${id}`);
+    if(modeEl){
+        modeEl.value = modeEl.dataset.original || 'high';
+    }
+
+    params.forEach(p=>{
+        const tEl = document.getElementById(`t${p}_${id}`);
+        const sEl = document.getElementById(`s${p}_${id}`);
+        const mEl = document.getElementById(`${p}_${id}`);
+
+        if(tEl){
+            tEl.value = tEl.dataset.original ?? tEl.defaultValue ?? '';
+            tEl.dataset.manual = '0';
+        }
+        if(sEl){
+            sEl.value = sEl.dataset.original ?? sEl.defaultValue ?? '';
+        }
+        if(mEl){
+            mEl.value = mEl.dataset.original ?? '';
+            mEl.className = '';
+        }
+    });
+
+    const wcEl = document.getElementById(`wc_${id}`);
+    if(wcEl){
+        wcEl.value = wcEl.dataset.original ?? '';
+    }
+
+    document.getElementById(`out_${id}`).innerHTML = '';
+    applyTechProfile(id, false);
+    updateParamColors(id);
+    saveAllSettings(id);
+    savePlanState(id, { html: '', status: 'Przywrócono ustawienia pierwotne.' });
+
+    const status = document.getElementById(`plan_status_${id}`);
+    if(status) status.textContent = 'Przywrócono ustawienia pierwotne.';
+}
+
+function applyTechProfile(id, preserveManual = false){
+    const mode = document.getElementById(`tech_${id}`)?.value || 'high';
+    const profile = techProfiles[mode] || techProfiles.high;
+    params.forEach(p=>{
+        const input = document.getElementById(`t${p}_${id}`);
+        if(!input) return;
+        if(!preserveManual || input.dataset.manual !== '1'){
+            input.value = profile.target[p];
+        }
+    });
+    const microInfo = document.getElementById(`microinfo_${id}`);
+    if(microInfo) microInfo.textContent = `Invital Ferox: tryb ${getImplicitDosingModeLabel(id)}, dawka liczona indywidualnie`;
+    const macroInfo = document.getElementById(`macroinfo_${id}`);
+    if(macroInfo) macroInfo.textContent = `Invital Macro: tryb ${getImplicitDosingModeLabel(id)}, dawka liczona indywidualnie`;
+    updateParamColors(id);
+}
+
+function getTrendSymbol(curr, prev){
+    if(prev === null || prev === undefined || isNaN(prev)) return '—';
+    if(curr > prev) return '↑';
+    if(curr < prev) return '↓';
+    return '=';
+}
+
+function renderTrendInfo(id){
+    const history = JSON.parse(localStorage.getItem(id+'_history_v16') || '[]');
+    const el = document.getElementById(`trend_${id}`);
+    if(!el) return;
+    if(history.length < 2){
+        el.innerHTML = 'Trend: NO3 — • PO4 — • K — • Fe —';
+        return;
+    }
+    const last = history[history.length - 1];
+    const prev = history[history.length - 2];
+    const lastVals = last.raw || { no3:last.no3, po4:last.po4, k:last.k, fe:last.fe };
+    const prevVals = prev.raw || { no3:prev.no3, po4:prev.po4, k:prev.k, fe:prev.fe };
+    el.innerHTML = `Trend: NO3 ${getTrendSymbol(lastVals.no3, prevVals.no3)} • PO4 ${getTrendSymbol(lastVals.po4, prevVals.po4)} • K ${getTrendSymbol(lastVals.k, prevVals.k)} • Fe ${getTrendSymbol(lastVals.fe, prevVals.fe)}`;
+}
+
+function updateLastActionInfo(id, type){
+    const now = new Date();
+    const stamp = now.toLocaleDateString('pl-PL') + ' ' + now.toLocaleTimeString('pl-PL', {hour:'2-digit', minute:'2-digit'});
+    const key = id + '_meta';
+    let meta = {};
+    try { meta = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e){}
+    if(type === 'test') meta.lastTest = stamp;
+    if(type === 'waterchange') meta.lastWaterChange = stamp;
+    localStorage.setItem(key + '_v2', JSON.stringify(meta));
+    renderMetaInfo(id);
+}
+
+function renderMetaInfo(id){
+    let meta = {};
+    try { meta = JSON.parse(localStorage.getItem(id + '_meta') || '{}'); } catch(e){}
+    const el = document.getElementById(`meta_${id}`);
+    if(!el) return;
+    el.innerHTML = `Ostatni test: ${meta.lastTest || '—'}<br>Ostatnia podmiana: ${meta.lastWaterChange || '—'}`;
+}
+
+function getImplicitDosingMode(id){
+    const preset = customPresets[id] || {};
+    const hasCo2 = !!preset.co2;
+    const light = preset.light || 'weak';
+    if(!hasCo2) return 'no_co2';
+    return light === 'strong' ? 'co2_strong' : 'co2_weak';
+}
+
+function getImplicitDosingModeLabel(id){
+    const mode = getImplicitDosingMode(id);
+    if(mode === 'no_co2') return 'bez CO2';
+    if(mode === 'co2_weak') return 'CO2 + słabe światło';
+    return 'CO2 + mocne światło';
+}
+
+function getFeroxProfile(id){
+    const mode = getImplicitDosingMode(id);
+    if(mode === 'no_co2'){
+        return {
+            mode,
+            label: getImplicitDosingModeLabel(id),
+            weeklyMlPer100l: 6,
+            fePerWeek: 0.10,
+            kPerWeek: 1.00
+        };
+    }
+    if(mode === 'co2_weak'){
+        return {
+            mode,
+            label: getImplicitDosingModeLabel(id),
+            weeklyMlPer100l: 9,
+            fePerWeek: 0.15,
+            kPerWeek: 1.50
+        };
+    }
+    return {
+        mode,
+        label: getImplicitDosingModeLabel(id),
+        weeklyMlPer100l: 15,
+        fePerWeek: 0.25,
+        kPerWeek: 2.50
+    };
+}
+
+function getMacroProfile(id){
+    const mode = getImplicitDosingMode(id);
+    if(mode === 'no_co2'){
+        return {
+            mode,
+            label: getImplicitDosingModeLabel(id),
+            weeklyMlPer100l: 0,
+            no3PerWeek: 0,
+            po4PerWeek: 0,
+            kPerWeek: 0
+        };
+    }
+    if(mode === 'co2_weak'){
+        return {
+            mode,
+            label: getImplicitDosingModeLabel(id),
+            weeklyMlPer100l: 3.5,
+            no3PerWeek: 3.0,
+            po4PerWeek: 0.25,
+            kPerWeek: 1.9
+        };
+    }
+    return {
+        mode,
+        label: getImplicitDosingModeLabel(id),
+        weeklyMlPer100l: 7,
+        no3PerWeek: 6.0,
+        po4PerWeek: 0.5,
+        kPerWeek: 3.8
+    };
+}
+
+function getFeroxContributionForMl(id, mlPerWeek, v){
+    const profile = getFeroxProfile(id);
+    if(profile.weeklyMlPer100l <= 0){
+        return { mlPerWeek, fe: 0, k: 0, profile };
+    }
+    const feStrength = (profile.fePerWeek * 10) / profile.weeklyMlPer100l;
+    const kStrength = (profile.kPerWeek * 10) / profile.weeklyMlPer100l;
+    const fe = contributionFromDose(mlPerWeek, feStrength, v);
+    const k = contributionFromDose(mlPerWeek, kStrength, v);
+    return { mlPerWeek, fe, k, profile };
+}
+
+function getMacroContributionForMl(id, mlPerWeek, v){
+    const profile = getMacroProfile(id);
+    if(profile.weeklyMlPer100l <= 0){
+        return { mlPerWeek, no3: 0, po4: 0, k: 0, profile };
+    }
+    const no3Strength = (profile.no3PerWeek * 10) / profile.weeklyMlPer100l;
+    const po4Strength = (profile.po4PerWeek * 10) / profile.weeklyMlPer100l;
+    const kStrength = (profile.kPerWeek * 10) / profile.weeklyMlPer100l;
+    const no3 = contributionFromDose(mlPerWeek, no3Strength, v);
+    const po4 = contributionFromDose(mlPerWeek, po4Strength, v);
+    const k = contributionFromDose(mlPerWeek, kStrength, v);
+    return { mlPerWeek, no3, po4, k, profile };
+}
+
+function calculateDynamicMacroPlan(id, v, afterWC, target){
+    const perMl = getMacroContributionForMl(id, 1, v);
+    const no3Deficit = Math.max(0, target.no3 - afterWC.no3);
+    const po4Deficit = Math.max(0, target.po4 - afterWC.po4);
+    const kDeficit = Math.max(0, target.k - afterWC.k);
+
+    const candidates = [];
+    if(no3Deficit > 0 && perMl.no3 > 0) candidates.push(no3Deficit / perMl.no3);
+    if(po4Deficit > 0 && perMl.po4 > 0) candidates.push(po4Deficit / perMl.po4);
+    if(kDeficit > 0 && perMl.k > 0) candidates.push(kDeficit / perMl.k);
+
+    let macroWeekly = candidates.length ? Math.min(...candidates) : 0;
+    macroWeekly = Math.max(0, Math.round(macroWeekly * 10) / 10);
+
+    const contribution = getMacroContributionForMl(id, macroWeekly, v);
+    return {
+        macroWeekly,
+        contribution,
+        remainingNo3Deficit: Math.max(0, no3Deficit - contribution.no3),
+        remainingPo4Deficit: Math.max(0, po4Deficit - contribution.po4),
+        remainingKDeficit: Math.max(0, kDeficit - contribution.k)
+    };
+}
+
+function calculateDynamicFeroxPlan(id, v, afterMacro, target){
+    const perMl = getFeroxContributionForMl(id, 1, v);
+    const feDeficit = Math.max(0, target.fe - afterMacro.fe);
+    const kDeficit = Math.max(0, target.k - afterMacro.k);
+
+    const candidates = [];
+    if(feDeficit > 0 && perMl.fe > 0) candidates.push(feDeficit / perMl.fe);
+    if(kDeficit > 0 && perMl.k > 0) candidates.push(kDeficit / perMl.k);
+
+    let feroxWeekly = candidates.length ? Math.min(...candidates) : 0;
+    feroxWeekly = Math.max(0, Math.round(feroxWeekly * 10) / 10);
+
+    const contribution = getFeroxContributionForMl(id, feroxWeekly, v);
+    return {
+        feroxWeekly,
+        contribution,
+        remainingFeDeficit: Math.max(0, feDeficit - contribution.fe),
+        remainingKDeficit: Math.max(0, kDeficit - contribution.k)
+    };
+}
+
+
+function getKSafeLimit(id){
+    const preset = customPresets[id] || {};
+    if(preset.mode === 'high') return 25; // HT
+    if(preset.mode === 'low' && preset.co2) return 20; // mid
+    return 15; // low-tech / shrimp
+}
+
+function optimizeFertilizerCombo(id, v, afterWC, target, strength){
+    const macroProfile = getMacroProfile(id);
+    const feroxProfile = getFeroxProfile(id);
+
+    const macroBase = (macroProfile.weeklyMlPer100l || 0) * v / 100;
+    const feroxBase = (feroxProfile.weeklyMlPer100l || 0) * v / 100;
+
+    const maxMacro = Math.round((macroBase * 2 + 10) * 10) / 10;
+    const maxFerox = Math.round((feroxBase * 2 + 6) * 10) / 10;
+    const step = 0.1;
+
+    let best = null;
+
+    for(let macroWeekly = 0; macroWeekly <= maxMacro + 1e-9; macroWeekly = Math.round((macroWeekly + step) * 10) / 10){
+        const macroContribution = getMacroContributionForMl(id, macroWeekly, v);
+        const afterMacro = {
+            no3: afterWC.no3 + macroContribution.no3,
+            po4: afterWC.po4 + macroContribution.po4,
+            k: afterWC.k + macroContribution.k,
+            fe: afterWC.fe
+        };
+
+        for(let feroxWeekly = 0; feroxWeekly <= maxFerox + 1e-9; feroxWeekly = Math.round((feroxWeekly + step) * 10) / 10){
+            const feroxContribution = getFeroxContributionForMl(id, feroxWeekly, v);
+            const afterCombined = {
+                no3: afterMacro.no3,
+                po4: afterMacro.po4,
+                k: afterMacro.k + feroxContribution.k,
+                fe: afterMacro.fe + feroxContribution.fe
+            };
+
+            const weekly = {};
+            weekly.no3 = dose(target.no3, afterCombined.no3, strength.no3, v);
+            const nitroKContribution = contributionFromDose(weekly.no3, 3, v);
+            weekly.po4 = dose(target.po4, afterCombined.po4, strength.po4, v);
+            weekly.k = dose(target.k, afterCombined.k + nitroKContribution, strength.k, v);
+            weekly.fe = dose(target.fe, afterCombined.fe, strength.fe, v);
+
+            const finalState = {
+                no3: afterCombined.no3 + contributionFromDose(weekly.no3, strength.no3, v),
+                po4: afterCombined.po4 + contributionFromDose(weekly.po4, strength.po4, v),
+                k: afterCombined.k + nitroKContribution + contributionFromDose(weekly.k, strength.k, v),
+                fe: afterCombined.fe + contributionFromDose(weekly.fe, strength.fe, v)
+            };
+
+            const overs = {
+                no3: Math.max(0, finalState.no3 - target.no3),
+                po4: Math.max(0, finalState.po4 - target.po4),
+                k: Math.max(0, finalState.k - target.k),
+                fe: Math.max(0, finalState.fe - target.fe)
+            };
+
+            const under = {
+                no3: Math.max(0, target.no3 - finalState.no3),
+                po4: Math.max(0, target.po4 - finalState.po4),
+                k: Math.max(0, target.k - finalState.k),
+                fe: Math.max(0, target.fe - finalState.fe)
+            };
+
+            const totalDirect = weekly.no3 + weekly.po4 + weekly.k + weekly.fe;
+            const totalAll = totalDirect + macroWeekly + feroxWeekly;
+
+            const kLimit = getKSafeLimit(id);
+            const kExcess = Math.max(0, finalState.k - kLimit);
+
+            const score =
+                totalAll * 1 +
+                totalDirect * 0.35 +
+                overs.no3 * 20 +
+                overs.po4 * 40 +
+                overs.k * 70 +
+                overs.fe * 120 +
+                under.no3 * 30 +
+                under.po4 * 50 +
+                under.k * 60 +
+                under.fe * 120 +
+                kExcess * 200 +
+                (macroBase === 0 ? macroWeekly * 200 : Math.max(0, macroWeekly - macroBase) * 4) +
+                (feroxBase === 0 ? feroxWeekly * 200 : Math.max(0, feroxWeekly - feroxBase) * 4);
+
+            if(!best || score < best.score){
+                best = {
+                    score,
+                    macroWeekly: Math.round(macroWeekly * 10) / 10,
+                    feroxWeekly: Math.round(feroxWeekly * 10) / 10,
+                    macroContribution,
+                    feroxContribution,
+                    afterMacro,
+                    afterCombined,
+                    weekly,
+                    nitroKContribution,
+                    finalState,
+                    overs,
+                    under,
+                    macroBase: Math.round(macroBase * 10) / 10,
+                    feroxBase: Math.round(feroxBase * 10) / 10
+                };
+            }
+        }
+    }
+
+    return best;
+}
+
+function buildAlerts(afterWC, target, wc, feroxPlan = null){
+    const alerts = [];
+    if(wc > 0) alerts.push(`Podmiana ${wc} l została uwzględniona w obliczeniach.`);
+    if(target.k > 0 && afterWC.k > target.k * 1.2) alerts.push('K jest już wysokie — nie zwiększaj go bez potrzeby.');
+    if(target.fe > 0 && afterWC.fe > target.fe * 1.2) alerts.push('Fe jest powyżej celu — uważaj z Ferro i Ferox.');
+    if(afterWC.po4 < Math.max(0.15, target.po4 * 0.5)) alerts.push('PO4 jest nisko po podmianie.');
+    if(afterWC.no3 < Math.max(3, target.no3 * 0.5)) alerts.push('NO3 jest nisko po podmianie.');
+    if(feroxPlan && feroxPlan.feroxWeekly > 0 && feroxPlan.remainingFeDeficit <= 0 && feroxPlan.remainingKDeficit <= 0) {
+        alerts.push('Invital Ferox został ograniczony tak, aby nie przebić jednocześnie celu Fe i K.');
+    }
+    return alerts;
+}
+
+function saveHistoryEntry(id, entry){
+    let history = JSON.parse(localStorage.getItem(id + '_history_v16') || '[]');
+    history.push(entry);
+    if(history.length > 30) history.shift();
+    localStorage.setItem(id + '_history_v16', JSON.stringify(history));
+}
+
+function saveMeasurementOnly(id){
+    params.concat(['wc']).forEach(p=>{
+        const el = document.getElementById(`${p}_${id}`);
+        if(el) validateInput(`${p}_${id}`);
+    });
+
+    const wc = parseFloat(document.getElementById(`wc_${id}`).value) || 0;
+    let rawCurrent = {};
+    params.forEach(p=>{
+        rawCurrent[p] = parseFloat(document.getElementById(`${p}_${id}`).value) || 0;
+    });
+
+    const now = new Date();
+    const datetime = now.toLocaleDateString('pl-PL') + ' ' + now.toLocaleTimeString('pl-PL', {hour:'2-digit',minute:'2-digit'});
+    saveHistoryEntry(id, { datetime, wc, raw: rawCurrent });
+    saveAllSettings(id);
+    updateLastActionInfo(id, 'test');
+    if(wc > 0) updateLastActionInfo(id, 'waterchange');
+    renderHistory(id);
+    renderTrendInfo(id);
+
+    const out = document.getElementById(`out_${id}`);
+    if(out){
+        out.innerHTML = `<table>
+            <tr><td colspan="2"><b>Zapisano sam pomiar</b></td></tr>
+            <tr><td>Testy:</td><td>NO3 ${rawCurrent.no3.toFixed(2)}, PO4 ${rawCurrent.po4.toFixed(2)}, K ${rawCurrent.k.toFixed(2)}, Fe ${rawCurrent.fe.toFixed(2)} mg/l</td></tr>
+            <tr><td>Podmiana:</td><td>${wc ? wc + ' l' : '—'}</td></tr>
+        </table>`;
+        savePlanState(id, { html: out.innerHTML, status: (document.getElementById(`plan_status_${id}`)?.textContent || '') });
+    }
+}
+
+function applySuggestedWaterChange(id){
+    const preset = customPresets[id];
+    if(!preset || preset.waterChange === undefined) return;
+    const wcEl = document.getElementById(`wc_${id}`);
+    if(wcEl){
+        wcEl.value = preset.waterChange;
+        saveAllSettings(id);
+    }
+}
+
+function applyCustomPreset(id){
+    if(id === 't4') applyT4Mode(false);
+    const preset = customPresets[id];
+    if(!preset) return;
+
+    const modeSelect = document.getElementById(`tech_${id}`);
+    if(modeSelect) modeSelect.value = preset.mode;
+
+    params.forEach(p=>{
+        const input = document.getElementById(`t${p}_${id}`);
+        if(input){
+            input.value = preset.target[p];
+            input.dataset.manual = '1';
+        }
+    });
+
+    applyTechProfile(id, true);
+    updateParamColors(id);
+    saveAllSettings(id);
+
+    const planBox = document.getElementById(`plan_${id}`);
+    if(planBox){
+        planBox.setAttribute('data-active', '1');
+    }
+
+    const status = document.getElementById(`plan_status_${id}`);
+    if(status) status.textContent = 'Plan ustawiony i zapisany.';
+    const prev = loadPlanState(id) || {};
+    savePlanState(id, { html: prev.html || '', status: 'Plan ustawiony i zapisany.' });
+}
 
 function dose(target, current, strength, volume){
     let diff = target - current;
-    if(diff <= 0) return 0;
+    if(diff <= 0 || !strength || strength <= 0) return 0;
     return (diff * volume) / (strength * 10);
+}
+
+function contributionFromDose(ml, strength, volume){
+    if(!ml || !strength || !volume) return 0;
+    return (ml * strength * 10) / volume;
 }
 
 function validateInput(id){
@@ -88,12 +778,18 @@ function updateParamColors(id){
     params.forEach(p=>{
         const target = parseFloat(document.getElementById(`t${p}_${id}`)?.value) || 0;
         const el = document.getElementById(`${p}_${id}`);
+        if(!el) return;
+
         let val = parseFloat(el.value) || 0;
         el.className = '';
-        if(val < target*0.95) el.classList.add('low');
-        else if(val > target*1.1) el.classList.add('high');
+
+        if(val < target * 0.95) el.classList.add('low');
+        else if(val > target * 1.1) el.classList.add('high');
         else el.classList.add('correct');
-        if((p==='fe' && val>1) || (p==='k' && val>50)) el.classList.add('warning');
+
+        if((p === 'fe' && val > 1) || (p === 'k' && val > 50)) {
+            el.classList.add('warning');
+        }
     });
 }
 
@@ -105,90 +801,204 @@ function calc(id){
 
     const v = effectiveVolumes[id];
     let wc = parseFloat(document.getElementById(`wc_${id}`).value) || 0;
-    let current = {};
+    wc = Math.max(0, Math.min(wc, v));
+    document.getElementById(`wc_${id}`).value = wc || '';
+
+    let rawCurrent = {};
+    let afterWC = {};
     params.forEach(p=>{
         let val = parseFloat(document.getElementById(`${p}_${id}`).value) || 0;
-        val *= (v - wc)/v;
-        current[p] = val;
+        rawCurrent[p] = val;
+        afterWC[p] = val * (v - wc) / v;
     });
 
     let strength = {};
-    params.forEach(p=>{
-        strength[p] = parseFloat(document.getElementById(`s${p}_${id}`).value) || 0;
-    });
-
     let target = {};
     params.forEach(p=>{
+        strength[p] = parseFloat(document.getElementById(`s${p}_${id}`).value) || 0;
         target[p] = parseFloat(document.getElementById(`t${p}_${id}`).value) || 0;
     });
 
-    let doses = {};
+    const modeEl = document.getElementById(`tech_${id}`);
+    const mode = modeEl ? modeEl.value : 'high';
+    const profile = (typeof techProfiles !== 'undefined' ? techProfiles[mode] : null) || {label:'High Tech', microFactor:8};
+
+    let weekly = {}, d1 = {}, d2 = {}, d3 = {}, deficit = {};
+
     params.forEach(p=>{
-        doses[p] = dose(target[p], current[p], strength[p], v);
+        deficit[p] = Math.max(0, target[p] - afterWC[p]);
     });
-    let micro = 8 * v / 100;
 
-    let outHTML = '<table>';
-    outHTML += `<tr><td>Dawkowanie dzienne:</td><td></td></tr>`;
-    outHTML += `<tr><td>🧪 NO3:</td><td>${(doses.no3/7).toFixed(2)} ml</td></tr>`;
-    outHTML += `<tr><td>💧 PO4:</td><td>${(doses.po4/7).toFixed(2)} ml</td></tr>`;
-    outHTML += `<tr><td>🌿 K:</td><td>${(doses.k/7).toFixed(2)} ml</td></tr>`;
-    outHTML += `<tr><td>🔩 Fe:</td><td>${(doses.fe/7).toFixed(2)} ml</td></tr>`;
-    outHTML += `<tr><td>💊 AF Micro:</td><td>${micro.toFixed(2)} kropli</td></tr>`;
-    outHTML += '</table>';
+    const bestCombo = optimizeFertilizerCombo(id, v, afterWC, target, strength);
+    const macroWeekly = bestCombo.macroWeekly;
+    const macroContribution = bestCombo.macroContribution;
+    const macro1 = Math.round(macroWeekly * 0.5 * 10) / 10;
+    const macro2 = Math.round(macroWeekly * 0.25 * 10) / 10;
+    const macro3 = Math.max(0, Math.round((macroWeekly - macro1 - macro2) * 10) / 10);
+
+    const afterMacro = bestCombo.afterMacro;
+
+    const microWeekly = bestCombo.feroxWeekly;
+    const microContribution = bestCombo.feroxContribution;
+    const micro1 = Math.round(microWeekly * 0.5 * 10) / 10;
+    const micro2 = Math.round(microWeekly * 0.25 * 10) / 10;
+    const micro3 = Math.max(0, Math.round((microWeekly - micro1 - micro2) * 10) / 10);
+
+    const afterCombined = bestCombo.afterCombined;
+
+    weekly.no3 = bestCombo.weekly.no3;
+    const nitroKContribution = bestCombo.nitroKContribution;
+    weekly.po4 = bestCombo.weekly.po4;
+    weekly.k = bestCombo.weekly.k;
+    weekly.fe = bestCombo.weekly.fe;
+
+    const macroPlan = {
+        macroWeekly,
+        contribution: macroContribution,
+        remainingNo3Deficit: Math.max(0, target.no3 - afterMacro.no3),
+        remainingPo4Deficit: Math.max(0, target.po4 - afterMacro.po4),
+        remainingKDeficit: Math.max(0, target.k - afterMacro.k)
+    };
+
+    const feroxPlan = {
+        feroxWeekly: microWeekly,
+        contribution: microContribution,
+        remainingFeDeficit: Math.max(0, target.fe - afterCombined.fe),
+        remainingKDeficit: Math.max(0, target.k - afterCombined.k)
+    };
+
+    params.forEach(p=>{
+        d1[p] = weekly[p] * 0.5;
+        d2[p] = weekly[p] * 0.25;
+        d3[p] = weekly[p] * 0.25;
+    });
+
+    saveAllSettings(id);
+    const alerts = buildAlerts(afterWC, target, wc, feroxPlan);
+
+    let outHTML = '<div class="readable-plan"><table>';
+    outHTML += `<tr><td class="label-col">Tryb nawożenia</td><td><span class="plan-pill">${profile.label}</span></td></tr>`;
+    outHTML += `<tr><td class="label-col">Tryb Macro/Ferox</td><td><span class="plan-pill">${getImplicitDosingModeLabel(id)}</span></td></tr>`;
+    outHTML += `<tr><td class="label-col">Strategia doboru</td><td><span class="plan-pill">Najlepsza kombinacja nawozów</span> <span class="plan-pill">Macro baza ${bestCombo.macroBase.toFixed(1)} ml/tydz</span> <span class="plan-pill">Ferox baza ${bestCombo.feroxBase.toFixed(1)} ml/tydz</span></td></tr>`;
+    outHTML += `<tr><td colspan="2" class="plan-section-title">Plan 3x w tygodniu wg testów i podmiany</td></tr>`;
+    outHTML += `<tr><td colspan="2" class="plan-note">Testy robisz przed podmianą, dawka sobotnia jest liczona po podmianie RO.</td></tr>`;
+
+    outHTML += `<tr><td colspan="2" class="plan-section-title">1. Stan przed podmianą</td></tr>`;
+    outHTML += `<tr><td class="label-col">Testy</td><td>
+        <span class="plan-pill">NO3 ${rawCurrent.no3.toFixed(2)} mg/l</span>
+        <span class="plan-pill">PO4 ${rawCurrent.po4.toFixed(2)} mg/l</span>
+        <span class="plan-pill">K ${rawCurrent.k.toFixed(2)} mg/l</span>
+        <span class="plan-pill">Fe ${rawCurrent.fe.toFixed(2)} mg/l</span>
+    </td></tr>`;
+
+    outHTML += `<tr><td colspan="2" class="plan-section-title">2. Stan po podmianie RO</td></tr>`;
+    outHTML += `<tr><td class="label-col">Po podmianie</td><td>
+        <span class="plan-pill">NO3 ${afterWC.no3.toFixed(2)} mg/l</span>
+        <span class="plan-pill">PO4 ${afterWC.po4.toFixed(2)} mg/l</span>
+        <span class="plan-pill">K ${afterWC.k.toFixed(2)} mg/l</span>
+        <span class="plan-pill">Fe ${afterWC.fe.toFixed(2)} mg/l</span>
+    </td></tr>`;
+
+    outHTML += `<tr><td colspan="2" class="plan-section-title">3. Brak do celu</td></tr>`;
+    outHTML += `<tr><td class="label-col">Do uzupełnienia</td><td>
+        <span class="plan-pill">NO3 ${deficit.no3.toFixed(2)} mg/l</span>
+        <span class="plan-pill">PO4 ${deficit.po4.toFixed(2)} mg/l</span>
+        <span class="plan-pill">K ${deficit.k.toFixed(2)} mg/l</span>
+        <span class="plan-pill">Fe ${deficit.fe.toFixed(2)} mg/l</span>
+    </td></tr>`;
+
+    outHTML += `<tr><td colspan="2" class="plan-section-title">4. Plan dawkowania</td></tr>`;
+    outHTML += `<tr><td class="label-col"><span class="plan-day">Sobota po podmianie</span></td><td>
+        <span class="plan-dose">N ${d1.no3.toFixed(2)} ml</span>
+        <span class="plan-dose">PO4 ${d1.po4.toFixed(2)} ml</span>
+        <span class="plan-dose">K ${d1.k.toFixed(2)} ml</span>
+        <span class="plan-dose">Fe ${d1.fe.toFixed(2)} ml</span>
+        <span class="plan-dose">Macro ${macro1.toFixed(1)} ml</span>
+        <span class="plan-dose">Ferox ${micro1.toFixed(1)} ml</span>
+    </td></tr>`;
+    outHTML += `<tr><td class="label-col"><span class="plan-day">Wtorek</span></td><td>
+        <span class="plan-dose">N ${d2.no3.toFixed(2)} ml</span>
+        <span class="plan-dose">PO4 ${d2.po4.toFixed(2)} ml</span>
+        <span class="plan-dose">K ${d2.k.toFixed(2)} ml</span>
+        <span class="plan-dose">Fe ${d2.fe.toFixed(2)} ml</span>
+        <span class="plan-dose">Macro ${macro2.toFixed(1)} ml</span>
+        <span class="plan-dose">Ferox ${micro2.toFixed(1)} ml</span>
+    </td></tr>`;
+    outHTML += `<tr><td class="label-col"><span class="plan-day">Czwartek</span></td><td>
+        <span class="plan-dose">N ${d3.no3.toFixed(2)} ml</span>
+        <span class="plan-dose">PO4 ${d3.po4.toFixed(2)} ml</span>
+        <span class="plan-dose">K ${d3.k.toFixed(2)} ml</span>
+        <span class="plan-dose">Fe ${d3.fe.toFixed(2)} ml</span>
+        <span class="plan-dose">Macro ${macro3.toFixed(1)} ml</span>
+        <span class="plan-dose">Ferox ${micro3.toFixed(1)} ml</span>
+    </td></tr>`;
+
+    outHTML += `<tr><td class="label-col">Razem tydzień</td><td class="plan-total">
+        <span class="plan-pill">N ${weekly.no3.toFixed(2)} ml</span>
+        <span class="plan-pill">PO4 ${weekly.po4.toFixed(2)} ml</span>
+        <span class="plan-pill">K ${weekly.k.toFixed(2)} ml</span>
+        <span class="plan-pill">Fe ${weekly.fe.toFixed(2)} ml</span>
+        <span class="plan-pill">Macro ${macroWeekly.toFixed(1)} ml</span>
+        <span class="plan-pill">Ferox ${microWeekly.toFixed(1)} ml</span><br>
+        Podział dawek: 50% sobota po podmianie, 25% wtorek, 25% czwartek.<br>
+        <span class="plan-note">Invital Macro jest liczony indywidualnie z braków NO3, PO4 i K po podmianie, a Invital Ferox indywidualnie z braków Fe i K po uwzględnieniu Macro. W tym planie Macro wnosi tygodniowo około: NO3 ${macroContribution.no3.toFixed(2)} mg/l, PO4 ${macroContribution.po4.toFixed(3)} mg/l, K ${macroContribution.k.toFixed(2)} mg/l. Ferox wnosi tygodniowo około: K ${microContribution.k.toFixed(2)} mg/l, Fe ${microContribution.fe.toFixed(3)} mg/l. Kalkulator uwzględnia też potas dostarczany przez Invital Nitro+. Po uwzględnieniu Macro zostaje do uzupełnienia: NO3 ${macroPlan.remainingNo3Deficit.toFixed(2)} mg/l, PO4 ${macroPlan.remainingPo4Deficit.toFixed(3)} mg/l, K ${macroPlan.remainingKDeficit.toFixed(2)} mg/l. Po uwzględnieniu Ferox zostaje do uzupełnienia: K ${feroxPlan.remainingKDeficit.toFixed(2)} mg/l, Fe ${feroxPlan.remainingFeDeficit.toFixed(3)} mg/l.</span>
+    </td></tr>`;
+
+    if(alerts.length){
+        outHTML += `<tr><td colspan="2" class="alert-box">⚠️ ${alerts.join('<br>⚠️ ')}</td></tr>`;
+    }
+    outHTML += '</table></div>';
     document.getElementById(`out_${id}`).innerHTML = outHTML;
+    updateLastActionInfo(id, 'test');
+    if(wc > 0) updateLastActionInfo(id, 'waterchange');
+    savePlanState(id, { html: outHTML, status: (document.getElementById(`plan_status_${id}`)?.textContent || '') });
 
-    let history = JSON.parse(localStorage.getItem(id+'_history') || '[]');
     const now = new Date();
     const datetime = now.toLocaleDateString('pl-PL') + ' ' + now.toLocaleTimeString('pl-PL', {hour:'2-digit',minute:'2-digit'});
-    history.push({
-        datetime,
-        wc,
-        ...current,
-        d_no3:(doses.no3/7).toFixed(2),
-        d_po4:(doses.po4/7).toFixed(2),
-        d_k:(doses.k/7).toFixed(2),
-        d_fe:(doses.fe/7).toFixed(2),
-        micro: micro.toFixed(2)
+    saveHistoryEntry(id, {
+        datetime, wc, raw: rawCurrent, adjusted: afterWC, target, mode,
+        plan3x: {d1, d2, d3, macro1, macro2, macro3, micro1, micro2, micro3, weekly, macroWeekly},
+        micro: microWeekly.toFixed(1)
     });
-    if(history.length>30) history.shift();
-    localStorage.setItem(id+'_history', JSON.stringify(history));
 
     updateParamColors(id);
     renderHistory(id);
 }
 
 function renderHistory(id){
-    const history = JSON.parse(localStorage.getItem(id+'_history') || '[]');
-    let html = '<b>Historia 30 dni:</b><br>';
+    const history = JSON.parse(localStorage.getItem(id+'_history_v16') || '[]');
+    let html = '<b>Historia 30 wpisów:</b><br>';
     history.slice().reverse().forEach(h=>{
+        const raw = h.raw || {
+            no3: h.no3 ?? 0,
+            po4: h.po4 ?? 0,
+            k: h.k ?? 0,
+            fe: h.fe ?? 0
+        };
+        const hasPlan = h.plan3x && h.plan3x.d1 && h.plan3x.d2 && h.plan3x.d3;
+
         html += `<div class="history-entry"><b>${h.datetime}</b>`;
-        html += `<table><tr><th>Parametr</th><th>Wartość</th><th>Dawki dzienne</th><th>Woda</th></tr>`;
+        html += `<table><tr><th>Parametr</th><th>Wynik badanej wody</th><th>Podmiana</th></tr>`;
+        html += `<tr><td>🧪 NO3</td><td>${Number(raw.no3 ?? 0).toFixed(2)} mg/l</td><td>${h.wc ? `${h.wc} l` : '–'}</td></tr>`;
+        html += `<tr><td>💧 PO4</td><td>${Number(raw.po4 ?? 0).toFixed(2)} mg/l</td><td></td></tr>`;
+        html += `<tr><td>🌿 K</td><td>${Number(raw.k ?? 0).toFixed(2)} mg/l</td><td></td></tr>`;
+        html += `<tr><td>🔩 Fe</td><td>${Number(raw.fe ?? 0).toFixed(2)} mg/l</td><td></td></tr>`;
+        html += `</table>`;
 
-        params.forEach(p=>{
-            let val = h[p];
-            let target = parseFloat(document.getElementById(`t${p}_${id}`).value) || 0;
-            let icon = '✅';
-            let cls = 'correct';
-            if(val < target*0.95) { icon = '⚠️'; cls='low'; }
-            else if(val > target*1.1) { icon = '❌'; cls='high'; }
-            if((p==='fe' && val>1) || (p==='k' && val>50)) { icon='⚠️'; cls='warning'; }
-            let doseVal = h['d_'+p];
-            let waterHTML = '';
-            if(p==='no3' && h.wc>0){
-                waterHTML = `<span class="water">${h.wc} l</span>`;
+        if(hasPlan){
+            html += `<table style="margin-top:8px;"><tr><th>Dzień</th><th>Nitro+</th><th>Fosfo+</th><th>Kali+</th><th>Ferro</th><th>Macro</th><th>Ferox</th></tr>`;
+            html += `<tr><td>Sobota</td><td>${Number(h.plan3x.d1.no3 ?? 0).toFixed(2)} ml</td><td>${Number(h.plan3x.d1.po4 ?? 0).toFixed(2)} ml</td><td>${Number(h.plan3x.d1.k ?? 0).toFixed(2)} ml</td><td>${Number(h.plan3x.d1.fe ?? 0).toFixed(2)} ml</td><td>${Number(h.plan3x.macro1 ?? 0).toFixed(1)} ml</td><td>${Number(h.plan3x.micro1 ?? 0).toFixed(1)} ml</td></tr>`;
+            html += `<tr><td>Wtorek</td><td>${Number(h.plan3x.d2.no3 ?? 0).toFixed(2)} ml</td><td>${Number(h.plan3x.d2.po4 ?? 0).toFixed(2)} ml</td><td>${Number(h.plan3x.d2.k ?? 0).toFixed(2)} ml</td><td>${Number(h.plan3x.d2.fe ?? 0).toFixed(2)} ml</td><td>${Number(h.plan3x.macro2 ?? 0).toFixed(1)} ml</td><td>${Number(h.plan3x.micro2 ?? 0).toFixed(1)} ml</td></tr>`;
+            html += `<tr><td>Czwartek</td><td>${Number(h.plan3x.d3.no3 ?? 0).toFixed(2)} ml</td><td>${Number(h.plan3x.d3.po4 ?? 0).toFixed(2)} ml</td><td>${Number(h.plan3x.d3.k ?? 0).toFixed(2)} ml</td><td>${Number(h.plan3x.d3.fe ?? 0).toFixed(2)} ml</td><td>${Number(h.plan3x.macro3 ?? 0).toFixed(1)} ml</td><td>${Number(h.plan3x.micro3 ?? 0).toFixed(1)} ml</td></tr>`;
+            html += `<tr><th>Razem tydzień</th><th>${Number(h.plan3x.weekly.no3 ?? 0).toFixed(2)} ml</th><th>${Number(h.plan3x.weekly.po4 ?? 0).toFixed(2)} ml</th><th>${Number(h.plan3x.weekly.k ?? 0).toFixed(2)} ml</th><th>${Number(h.plan3x.weekly.fe ?? 0).toFixed(2)} ml</th><th>${Number(h.plan3x.macroWeekly ?? 0).toFixed(1)} ml</th><th>${Number(h.micro ?? 0).toFixed(1)} ml</th></tr></table>`;
+            if(h.mode){
+                html += `<div style="margin-top:6px;color:#aaa;font-size:12px;">Tryb: ${h.mode === 'high' ? 'High Tech' : 'Low Tech'}</div>`;
             }
+        } else {
+            html += `<div style="margin-top:6px;color:#aaa;font-size:12px;">Brak zapisanego planu dawkowania dla tego wpisu.</div>`;
+        }
 
-            html += `<tr>
-                <td>${icon} ${p.toUpperCase()}</td>
-                <td class="param-value ${cls}">${val}</td>
-                <td><span class="dose">${doseVal} ml</span></td>
-                <td>${waterHTML}</td>
-            </tr>`;
-        });
-
-        html += `<tr><td>💊 Micro</td><td>–</td><td><span class="dose">${h.micro} kropli</span></td><td></td></tr>`;
-        html += `</table></div>`;
+        html += `</div>`;
     });
     const div = document.getElementById(`history_${id}`);
     div.innerHTML = html;
@@ -200,10 +1010,15 @@ function clearResults(id){
     document.getElementById(`wc_${id}`).value='';
     updateParamColors(id);
     document.getElementById(`out_${id}`).innerHTML='';
+    saveAllSettings(id);
+    savePlanState(id, { html: '', status: (document.getElementById(`plan_status_${id}`)?.textContent || '') });
 }
+
 function clearHistory(id){
     localStorage.removeItem(id+'_history');
-    document.getElementById(`history_${id}`).innerHTML='<b>Historia 30 dni:</b><br>';
+    document.getElementById(`history_${id}`).innerHTML='<b>Historia 30 wpisów:</b><br>';
+    renderMetaInfo(id);
+    renderTrendInfo(id);
 }
 
 function showTab(id){
@@ -213,12 +1028,18 @@ function showTab(id){
 
 function createTankUI(id, volume){
     document.getElementById(id).innerHTML=`
-    <h3>${volume}L</h3>
+    <h3>${volume}L (${effectiveVolumes[id]}L netto)</h3>
     <div class="box">
     <table>
       <tr>
         <td>Podmiana:</td>
-        <td><input id="wc_${id}" type="number" title="Ilość wody podmienionej w litrach"> l</td>
+        <td>
+          <input id="wc_${id}" type="number" title="Ilość wody podmienionej w litrach" oninput="saveAllSettings('${id}')"> l
+          ${customPresets[id] && customPresets[id].waterChange !== undefined ? `
+            <span style="display:inline-block;margin-left:10px;color:#aaa;">Sugerowana: ${customPresets[id].waterChange} l</span>
+            <button onclick="applySuggestedWaterChange('${id}')" style="padding:4px 8px;margin-left:8px;">Ustaw</button>
+          ` : ``}
+        </td>
       </tr>
     </table>
     </div>
@@ -226,44 +1047,99 @@ function createTankUI(id, volume){
     <b>Parametry (mg/l)</b><br>
     <p style="font-size:12px;color:#aaa;">Wprowadź parametry przed podmianą wody</p>
     <table>
-      <tr><td>🧪 NO3:</td><td><input id="no3_${id}" type="number" step="0.1" oninput="updateParamColors('${id}')"> mg/l</td></tr>
-      <tr><td>💧 PO4:</td><td><input id="po4_${id}" type="number" step="0.1" oninput="updateParamColors('${id}')"> mg/l</td></tr>
-      <tr><td>🌿 K:</td><td><input id="k_${id}" type="number" step="0.1" oninput="updateParamColors('${id}')"> mg/l</td></tr>
-      <tr><td>🔩 Fe:</td><td><input id="fe_${id}" type="number" step="0.01" oninput="updateParamColors('${id}')"> mg/l</td></tr>
+      <tr><td>🧪 NO3:</td><td><input id="no3_${id}" type="number" step="0.1" oninput="updateParamColors('${id}'); saveAllSettings('${id}')"> mg/l</td></tr>
+      <tr><td>💧 PO4:</td><td><input id="po4_${id}" type="number" step="0.1" oninput="updateParamColors('${id}'); saveAllSettings('${id}')"> mg/l</td></tr>
+      <tr><td>🌿 K:</td><td><input id="k_${id}" type="number" step="0.1" oninput="updateParamColors('${id}'); saveAllSettings('${id}')"> mg/l</td></tr>
+      <tr><td>🔩 Fe:</td><td><input id="fe_${id}" type="number" step="0.01" oninput="updateParamColors('${id}'); saveAllSettings('${id}')"> mg/l</td></tr>
     </table>
     <button onclick="clearResults('${id}')">Wyczyść parametry</button>
     </div>
     <div class="box">
-    <b>Moc nawozów (mg/l)</b> <p style="font-size:12px;color:#aaa;">Wartości dla 10ml nawozu na 100L wody</p>
-    <table style="text-align:left;">
-      <tr><td>🧪 AF N Boost:</td><td><input id="sno3_${id}" value="9.5"> mg/l</td></tr>
-      <tr><td>💧 AF PO4 Boost:</td><td><input id="spo4_${id}" value="0.4"> mg/l</td></tr>
-      <tr><td>🌿 AF K Boost:</td><td><input id="sk_${id}" value="5"> mg/l</td></tr>
-      <tr><td>🔩 AF Iron Boost:</td><td><input id="sfe_${id}" value="0.4"> mg/l</td></tr>
-      <tr><td>💊 AF Micro:</td><td>8 kropli/dzień</td></tr>
+    <b>Tryb nawożenia</b>
+    <table>
+      <tr>
+        <td>Profil:</td>
+        <td>
+          <select id="tech_${id}" onchange="applyTechProfile('${id}'); saveAllSettings('${id}')" style="margin: 5px; background-color: #1e1e1e; color: #e0e0e0; border: 1px solid #444; padding: 5px; border-radius: 4px;">
+            <option value="high">High Tech</option>
+            <option value="low">Low Tech</option>
+          </select>
+        </td>
+      </tr>
     </table>
+    <p style="font-size:12px;color:#aaa;">Profil ustawia domyślne wartości docelowe. Nadal możesz je zmienić ręcznie.</p>
+    </div>
+    <div class="box">
+    <b>Moc nawozów (mg/l)</b> <p style="font-size:12px;color:#aaa;">Wartości dla 10 ml nawozu na 100 l wody (Invital). Założenia główne: Nitro+ 5 NO3 i 3 K, Fosfo+ 0.2 PO4, Kali+ 1 K, Ferro 1 Fe. Macro i Ferox są liczone dynamicznie z danych producenta i dobierane automatycznie na podstawie CO2 oraz siły światła w opisie akwarium.</p>
+<div style="font-size:11px;color:#9aa; margin:6px 0 10px 0;">Macro w kodzie: 7 ml / 100 l tygodniowo ≈ 6 mg/l NO3, 0.5 mg/l PO4, 3.8 mg/l K. Ferox w kodzie: 15 ml / 100 l tygodniowo ≈ 0.25 mg/l Fe, 2.5 mg/l K.</div>
+    <table style="text-align:left;">
+      <tr><td>🧪 Invital Nitro+:</td><td><input id="sno3_${id}" value="5" onchange="saveAllSettings('${id}')"> mg/l NO3</td></tr>
+      <tr><td>💧 Invital Fosfo+:</td><td><input id="spo4_${id}" value="0.2" onchange="saveAllSettings('${id}')"> mg/l PO4</td></tr>
+      <tr><td>🌿 Invital Kali+:</td><td><input id="sk_${id}" value="1" onchange="saveAllSettings('${id}')"> mg/l K</td></tr>
+      <tr><td>🔩 Invital Ferro:</td><td><input id="sfe_${id}" value="1" onchange="saveAllSettings('${id}')"> mg/l Fe</td></tr>
+      <tr><td>💊 Invital Ferox:</td><td><span id="microinfo_${id}">Invital Ferox: dawka liczona indywidualnie</span></td></tr>
+      <tr><td>🧃 Invital Macro:</td><td><span id="macroinfo_${id}">Invital Macro: dawka liczona indywidualnie</span></td></tr>
+    </table>
+    <p style="font-size:12px;color:#aaa;">Założenia: Nitro+ 10 ml/100 l = 5 mg/l NO3 i 3 mg/l K, Fosfo+ 10 ml/100 l = 0,5 mg/l PO4, Kali+ 10 ml/100 l = 2,5 mg/l K, Ferro 10 ml/100 l = 1 mg/l Fe. Ferox i Macro są liczone indywidualnie w ml oraz wnoszą odpowiednio Fe/K oraz NO3/PO4/K do bilansu.</p>
     </div>
     <div class="box">
     <b>Docelowe (mg/l)</b>
     <table style="text-align:left;">
-      <tr><td>🧪 NO3:</td><td><input id="tno3_${id}" value="10"> mg/l</td></tr>
-      <tr><td>💧 PO4:</td><td><input id="tpo4_${id}" value="1"> mg/l</td></tr>
-      <tr><td>🌿 K:</td><td><input id="tk_${id}" value="20"> mg/l</td></tr>
-      <tr><td>🔩 Fe:</td><td><input id="tfe_${id}" value="0.4"> mg/l</td></tr>
+      <tr><td>🧪 NO3:</td><td><input id="tno3_${id}" value="10" oninput="this.dataset.manual='1'; updateParamColors('${id}'); saveAllSettings('${id}')"> mg/l</td></tr>
+      <tr><td>💧 PO4:</td><td><input id="tpo4_${id}" value="1" oninput="this.dataset.manual='1'; updateParamColors('${id}'); saveAllSettings('${id}')"> mg/l</td></tr>
+      <tr><td>🌿 K:</td><td><input id="tk_${id}" value="20" oninput="this.dataset.manual='1'; updateParamColors('${id}'); saveAllSettings('${id}')"> mg/l</td></tr>
+      <tr><td>🔩 Fe:</td><td><input id="tfe_${id}" value="0.4" oninput="this.dataset.manual='1'; updateParamColors('${id}'); saveAllSettings('${id}')"> mg/l</td></tr>
     </table>
-    </div>
-    <button onclick="calc('${id}')">Oblicz</button>
+    </div>    ${Object.keys(customPresets).includes(id) ? `<div class="box" id="plan_${id}">
+    <b>Plan nawożenia dla tego akwarium</b><br>
+    <span style="color:#aaa;">${
+        id === 't1' ? 'Dojrzałe high tech z CO2, aktywnym podłożem i sporą obsadą ryb. Preferencja Nitro nad Macro dla kontroli K.' :
+        id === 't2' ? '72l brutto / 60l netto. Low tech bez CO2 z dużą obsadą i spokojnym nawożeniem.' :
+        id === 't3' ? '33l brutto / 28l netto. Low tech na epifitach, bez CO2, z bardzo lekkim nawożeniem.' :
+        id === 't4' ? '<span id="t4_desc_text">Dojrzały zbiornik paprotkowy bez CO2, ze spokojnym nawożeniem dla neocaridina.</span>' : id === 't5' ? '30l brutto / 25l netto. Dojrzałe krewetkarium bez CO2, z lekkim i stabilnym nawożeniem.' : 'Sanatorium 20l z ostrożnym i stabilnym nawożeniem.'
+    }</span><br>
+    <span style="color:#aaa;">Plan dynamiczny 3x w tygodniu.</span><br>
+    <span style="color:#aaa;">${
+        id === 't1' ? 'Docelowe: NO3 12, PO4 0.7, K 16, Fe 0.12' :
+        id === 't2' ? 'Docelowe: NO3 10, PO4 0.5, K 10, Fe 0.05' :
+        id === 't3' ? 'Docelowe: NO3 7, PO4 0.4, K 7, Fe 0.03' :
+        id === 't4' ? '<span id="t4_target_text">Docelowe: NO3 7, PO4 0.4, K 7, Fe 0.03</span>' : id === 't5' ? 'Docelowe: NO3 8, PO4 0.4, K 11, Fe 0.04' : 'Docelowe według zapisanego presetu dla 20l.'
+    }</span><br>
+    <span style="color:#aaa;">${
+        id === 't1' ? 'Oświetlenie planu: Skylight FOQAL 120 cm 80W. Zalecana moc: 55%, 8h (1h wschód / 6h pełne / 1h zachód).' :
+        id === 't2' ? 'Oświetlenie planu: Sincor LED RGB 45 cm. Zalecana moc: 45%, 7h (1h wschód / 5h pełne / 1h zachód).' :
+        id === 't3' ? 'Oświetlenie planu: Invital TF-300 4W. Zalecany czas: 6h dziennie.' :
+        id === 't4' ? '<span id="t4_light_text">Oświetlenie planu: Invital TF-300 4W. Zalecany czas: 6–6.5h dziennie.</span>' : id === 't5' ? 'Oświetlenie planu: Sincor LED RGB 30 cm. Zalecane 50–60% mocy przez 7h dziennie.' : id === 't6' ? 'Oświetlenie planu: brak zewnętrznego oświetlenia.' : ''
+    }</span>${(id === 't1' || id === 't2' || id === 't3' || id === 't4' || id === 't5') ? '<br>' : ''}
+    ${id === 't3' ? '<span style="color:#ff8a80;">Ostrzeżenie: przy NO2 > 0 nie wpuszczaj krewetek.</span><br>' : ``}
+    ${id === 't4' ? '<span id="t4_warn_text" style="color:#ff8a80;">Ostrzeżenie: neocaridina tylko przy NO2 = 0.</span><br>' : ``}
+    <span style="color:#aaa;">Dawki są liczone z testów wykonanych przed podmianą oraz ilości podmienionej wody.</span><br>
+    <span id="plan_status_${id}" style="font-size:12px;color:#aaa;"></span><br>
+    <button onclick="applyCustomPreset('${id}')">Ustaw ten plan</button>
+    <button onclick="resetToOptimalSettings('${id}')">Powrót do optymalnych ustawień</button>
+    </div>` : ``}
+    <div class="status-bar" id="meta_${id}">Ostatni test: —<br>Ostatnia podmiana: —</div>
+    <div class="trend-box" id="trend_${id}">Trend: NO3 — • PO4 — • K — • Fe —</div>
+    <button class="primary-btn" onclick="calc('${id}')">Oblicz</button>
+    <button onclick="saveMeasurementOnly('${id}')">Zapisz sam pomiar</button>
     <button onclick="clearHistory('${id}')">Wyczyść historię</button>
     <div class="result" id="out_${id}"></div>
-    <div class="history-box" id="history_${id}"><b>Historia 30 dni:</b><br></div>
+    <div class="history-box" id="history_${id}"><b>Historia 30 wpisów:</b><br></div>
     `;
 }
 
-// Inicjalizacja UI i automatyczne wczytanie historii
 Object.keys(tanks).forEach(id=>{
     createTankUI(id, tanks[id]);
+    captureOriginalDefaults(id);
+    const loaded = loadAllSettings(id);
+    applyTechProfile(id, loaded);
+    updateParamColors(id);
+    restorePlanView(id);
     renderHistory(id);
+    renderTrendInfo(id);
+    renderMetaInfo(id);
 });
+syncT4ModeFromStoredTargets();
 </script>
 
 </body>
